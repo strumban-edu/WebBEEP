@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Event</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <h1>Add a New Event</h1>
+  <form action="{{ url_for('add_event') }}" method="POST">
+    <label for="eventname">Event Name:</label><br>
+    <input type="text" id="eventname" name="eventname" required><br><br>
+
+    <label for="category">Category:</label><br>
+    <input type="text" id="category" name="category" required><br><br>
+
+    <label for="status">Status:</label><br>
+    <select id="status" name="status" required>
+      <option value="Complete">Complete</option>
+      <option value="Uncomplete">Uncomplete</option>
+    </select><br><br>
+
+    <label for="eventtime">Time (HH:MM:SS):</label><br>
+    <input type="time" id="eventtime" name="eventtime" required><br><br>
+
+    <label for="locationid">Location:</label><br>
+    <select id="locationid" name="locationid" required>
+      {% for loc in locations %}
+        <option value="{{ loc[0] }}">{{ loc[1] }}</option>
+      {% endfor %}
+    </select><br><br>
+
+    <button type="submit">Add Event</button>
+  </form>
+
+</body>
+</html>

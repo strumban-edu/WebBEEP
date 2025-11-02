@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -9,69 +9,50 @@
 <body>
 
   <header id="mainHeader">
-  <div class="left-section">
-    <a href="#" class="logo-link">
-      <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="My Logo" class="logo">
-    </a>
-    <div>Web Beep</div>
-  </div>
-
-  <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
-    <a href="WebBeepMockup.html" class="profile-link">Profile</a>
-    <div class="search-container">
-      <input type="text" placeholder="Search...">
-      <button>Search</button>
+    <div class="left-section">
+      <a href="#" class="logo-link">
+        <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="My Logo" class="logo">
+      </a>
+      <div>Web Beep</div>
     </div>
-  </div>
-</header>
+
+    <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
+      <a href="add_event.html" class="profile-link">Profile</a>
+      <a href="{{ url_for('add_event') }}" class="profile-link">Add Event</a>
+      <div class="search-container">
+        <input type="text" placeholder="Search...">
+        <button>Search</button>
+      </div>
+    </div>
+  </header>
 
   <main>
     <div class="grid-container">
-      <div class="grid-item" data-modal="modal1">
+      {% for event in events %}
+      <div class="grid-item" data-modal="modal{{ event[0] }}">
         <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-        <p>Test event 1</p>
+        <p>{{ event[1] }}</p> <!-- Event name -->
       </div>
-
-      <div class="grid-item" data-modal="modal2">
-        <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-        <p>Test event 2</p>
-      </div>
-
-      <div class="grid-item" data-modal="modal3">
-        <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-        <p>Test event 3</p>
-      </div>
+      {% endfor %}
     </div>
   </main>
 
-  
-
-  <div id="modal1" class="modal">
+  <!-- Modals -->
+  {% for event in events %}
+  <div id="modal{{ event[0] }}" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-      <h2>Test event 1</h2>
-      <p>This one has alot of text! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <h2>{{ event[1] }}</h2> <!-- Event name -->
+      <p>
+        Category: {{ event[2] }}<br>
+        Status: {{ event[3] }}<br>
+        Time: {{ event[4] }}<br>
+        Location: {{ event[5] }}
+      </p>
     </div>
   </div>
-
-  <div id="modal2" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-      <h2>Test event 2</h2>
-      <p>This one has little.</p>
-    </div>
-  </div>
-
-  <div id="modal3" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-      <h2>Test event 3</h2>
-      <p>Owen is a cool guy!</p>
-    </div>
-  </div>
+  {% endfor %}
 
   <script>
     const header = document.getElementById('mainHeader');
@@ -79,7 +60,7 @@
       header.classList.toggle('shrink', window.scrollY > 50);
     });
 
-    /*Modal functionality*/
+    /* Modal functionality */
     const gridItems = document.querySelectorAll('.grid-item');
     const closes = document.querySelectorAll('.close');
 
