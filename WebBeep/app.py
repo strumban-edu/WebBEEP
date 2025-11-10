@@ -37,31 +37,34 @@ def index():
 
 @app.route('/add-event', methods=['GET', 'POST'])
 def add_event():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    # Fetch locations for dropdown
-    cur.execute('SELECT locationid, locationname FROM "Location" ORDER BY locationname;')
-    locations = cur.fetchall()
-    
     if request.method == 'POST':
         eventname = request.form['eventname']
         category = request.form['category']
         status = request.form['status']
         eventtime = request.form['eventtime']
-        locationid = request.form['locationid']
-        creatorid = 1  # For now, default user id; later can tie to logged-in user
-        
-        cur.execute('''
-            INSERT INTO "Event" (eventname, category, status, eventtime, locationid, creatorid)
+        location_name = request.form['location_name']
+        location_address = request.form.get('location_address', '')
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            INSERT INTO "Location" (locationname, locationaddress)
+            VALUES (%s, %s)
+            RETURNING locationid;
+        """, (location_name, location_address))
+        locationid = cur.fetchone()[0]
+
+        cur.execute("""
+            INSERT INTO "Event" (eventname, category, status, eventtime, creatorid, locationid)
             VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (eventname, category, status, eventtime, locationid, creatorid))
-        
+        """, (eventname, category, status, eventtime, 1, locationid))
+
         conn.commit()
         cur.close()
         conn.close()
+
         return redirect(url_for('index'))
-    
-    cur.close()
-    conn.close()
-    return render_template('add_event.html', locations=locations)
+
+    return render_template('add_event.html')
+

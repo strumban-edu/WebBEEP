@@ -5,35 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add Event</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .form-wrapper {
+      max-width: 600px;
+      margin: 220px auto 50px auto;
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      animation: slideUp 0.4s ease;
+    }
+
+    .form-wrapper h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      color: #444;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 18px;
+      border-radius: 10px;
+      border: 1px solid #bbb;
+      font-size: 1em;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #2e8b57;
+      color: white;
+      border: none;
+      border-radius: 15px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #246b45;
+    }
+  </style>
 </head>
 <body>
 
-  <h1>Add a New Event</h1>
-  <form action="{{ url_for('add_event') }}" method="POST">
-    <label for="eventname">Event Name:</label><br>
-    <input type="text" id="eventname" name="eventname" required><br><br>
+  <header id="mainHeader">
+    <div class="left-section">
+      <a href="{{ url_for('index') }}" class="logo-link">
+        <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Logo" class="logo">
+      </a>
+      <div>Web Beep</div>
+    </div>
 
-    <label for="category">Category:</label><br>
-    <input type="text" id="category" name="category" required><br><br>
+    <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
+      <a href="{{ url_for('index') }}" class="profile-link">Home</a>
+    </div>
+  </header>
 
-    <label for="status">Status:</label><br>
-    <select id="status" name="status" required>
-      <option value="Complete">Complete</option>
-      <option value="Uncomplete">Uncomplete</option>
-    </select><br><br>
+  <div class="form-wrapper">
+    <h1>Add a New Event</h1>
 
-    <label for="eventtime">Time (HH:MM:SS):</label><br>
-    <input type="time" id="eventtime" name="eventtime" required><br><br>
+    <form action="{{ url_for('add_event') }}" method="POST">
 
-    <label for="locationid">Location:</label><br>
-    <select id="locationid" name="locationid" required>
-      {% for loc in locations %}
-        <option value="{{ loc[0] }}">{{ loc[1] }}</option>
-      {% endfor %}
-    </select><br><br>
+      <label for="eventname">Event Name:</label>
+      <input type="text" id="eventname" name="eventname" required>
 
-    <button type="submit">Add Event</button>
-  </form>
+      <label for="category">Category:</label>
+      <input type="text" id="category" name="category" required>
+
+      <label for="status">Status:</label>
+      <select id="status" name="status" required>
+        <option value="Complete">Complete</option>
+        <option value="Uncomplete">Uncomplete</option>
+      </select>
+
+      <label for="eventtime">Time:</label>
+      <input type="time" id="eventtime" name="eventtime" required>
+
+      <label for="location_choice">Location:</label>
+      <input type="text" id="location_name" name="location_name" required>
+      
+
+      <button type="submit">Add Event</button>
+    </form>
+  </div>
+
+  <script>
+    const header = document.getElementById('mainHeader');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('shrink', window.scrollY > 50);
+    });
+  </script>
 
 </body>
 </html>
