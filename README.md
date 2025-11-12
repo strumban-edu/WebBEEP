@@ -1,4 +1,4 @@
-# WebBEP
+# WebBEEP
 ## Instructions
 1. __Install Python/Pip__
     - Download Python (at least version 3.4) at: [python.org](https://www.python.org/downloads/)
