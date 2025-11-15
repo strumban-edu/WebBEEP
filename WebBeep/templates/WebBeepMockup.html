@@ -8,81 +8,95 @@
 </head>
 <body>
 
-  <header id="mainHeader">
-    <div class="left-section">
-      <a href="#" class="logo-link">
-        <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="My Logo" class="logo">
-      </a>
-      <div>Web Beep</div>
-    </div>
+<header id="mainHeader">
+  <div class="left-section">
+    <a href="#" class="logo-link">
+      <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="My Logo" class="logo">
+    </a>
+    <div>Web Beep</div>
+  </div>
 
-    <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
-      <a href="add_event.html" class="profile-link">Profile</a>
+  <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
+    {% if current_user.is_authenticated %}
       <a href="{{ url_for('add_event') }}" class="profile-link">Add Event</a>
-      <div class="search-container">
-        <input type="text" placeholder="Search...">
-        <button>Search</button>
-      </div>
-    </div>
-  </header>
+      <a href="#" class="profile-link">Profile</a>
+      <a href="{{ url_for('logout') }}" class="profile-link">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="profile-link">Login</a>
+      <a href="{{ url_for('register') }}" class="profile-link">Register</a>
+    {% endif %}
 
-  <main>
-    <div class="grid-container">
-      {% for event in events %}
-      <div class="grid-item" data-modal="modal{{ event[0] }}">
+    <div class="search-container">
+      <input type="text" placeholder="Search...">
+      <button>Search</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid-container">
+    {% for event, location in events %}
+      <div class="grid-item" data-modal="modal{{ event.eventid }}">
         <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-        <p>{{ event[1] }}</p> <!-- Event name -->
+        <p>{{ event.eventname }}</p>
       </div>
-      {% endfor %}
-    </div>
-  </main>
+    {% endfor %}
+  </div>
+</main>
 
-  <!-- Modals -->
-  {% for event in events %}
-  <div id="modal{{ event[0] }}" class="modal">
+{% for event, location in events %}
+  <div id="modal{{ event.eventid }}" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
       <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-      <h2>{{ event[1] }}</h2> <!-- Event name -->
+      <h2>{{ event.eventname }}</h2>
       <p>
-        Category: {{ event[2] }}<br>
-        Status: {{ event[3] }}<br>
-        Time: {{ event[4] }}<br>
-        Location: {{ event[5] }}
+        Category: {{ event.category }}<br>
+        Status: {{ event.status }}<br>
+        Time: {{ event.eventtime }}<br>
+        Location: {{ location.locationname }}
       </p>
+
+      {% if current_user.is_authenticated and event.creatorid == current_user.user_id %}
+        <div class="event-actions">
+        <!-- Edit/Delete links temporarily disabled until routes are implemented -->
+        <span class="edit-btn disabled">Edit (coming soon)</span>
+        <span class="delete-btn disabled">Delete (coming soon)</span>
+    </div>
+    {% endif %}
     </div>
   </div>
-  {% endfor %}
+{% endfor %}
 
-  <script>
-    const header = document.getElementById('mainHeader');
-    window.addEventListener('scroll', () => {
-      header.classList.toggle('shrink', window.scrollY > 50);
-    });
+<script>
+const header = document.getElementById('mainHeader');
+window.addEventListener('scroll', () => {
+  header.classList.toggle('shrink', window.scrollY > 50);
+});
 
-    /* Modal functionality */
-    const gridItems = document.querySelectorAll('.grid-item');
-    const closes = document.querySelectorAll('.close');
+/* Modal functionality */
+const gridItems = document.querySelectorAll('.grid-item');
+const closes = document.querySelectorAll('.close');
 
-    gridItems.forEach(item => {
-      item.addEventListener('click', () => {
-        const modalId = item.getAttribute('data-modal');
-        document.getElementById(modalId).style.display = 'block';
-      });
-    });
+gridItems.forEach(item => {
+  item.addEventListener('click', () => {
+    const modalId = item.getAttribute('data-modal');
+    document.getElementById(modalId).style.display = 'block';
+  });
+});
 
-    closes.forEach(close => {
-      close.addEventListener('click', () => {
-        close.parentElement.parentElement.style.display = 'none';
-      });
-    });
+closes.forEach(close => {
+  close.addEventListener('click', () => {
+    close.parentElement.parentElement.style.display = 'none';
+  });
+});
 
-    window.addEventListener('click', (e) => {
-      if (e.target.classList.contains('modal')) {
-        e.target.style.display = 'none';
-      }
-    });
-  </script>
+window.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal')) {
+    e.target.style.display = 'none';
+  }
+});
+</script>
 
 </body>
 </html>
