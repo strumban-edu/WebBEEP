@@ -1,3 +1,4 @@
+import sqlite3
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
@@ -164,6 +165,49 @@ def add_event():
         return redirect("/")
 
     return render_template("add_event.html")
+
+@app.route('/edit_event/<int:event_id>', methods=['GET', 'POST'])
+@login_required
+def edit_event(event_id):
+    event = Event.query.filter_by(eventid=event_id, creatorid=current_user.user_id).first()
+
+    if not event:
+        return "Unauthorized", 403
+
+    # Fetch the location object for the event
+    location = Location.query.filter_by(locationid=event.locationid).first()
+
+    if request.method == "POST":
+        event.eventname = request.form["eventname"]
+        event.category = request.form["category"]
+        event.status = request.form["status"]
+        event.eventtime = request.form["eventtime"]
+
+        # Update location name if present
+        location.locationname = request.form["location_name"]
+
+        db.session.commit()
+        return redirect(url_for("index"))
+
+    return render_template("edit_event.html", event=event, location=location)
+
+@app.route("/delete_event/<int:event_id>", methods=["POST"])
+@login_required
+def delete_event(event_id):
+    event = Event.query.get_or_404(event_id)
+
+    # Check ownership correctly
+    if event.creatorid != current_user.user_id:
+        return "Unauthorized", 403
+
+    db.session.delete(event)
+    db.session.commit()
+    return redirect("/")
+
+
+
+
+
 
 
 # -------------------------

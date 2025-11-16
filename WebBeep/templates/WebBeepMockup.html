@@ -54,15 +54,23 @@
         Category: {{ event.category }}<br>
         Status: {{ event.status }}<br>
         Time: {{ event.eventtime }}<br>
-        Location: {{ location.locationname }}
+        Location: 
+        <a href="https://www.google.com/maps/search/{{ location.locationname | urlencode }}" 
+        target="_blank"
+        style="color: #2e8b57; text-decoration: underline; cursor: pointer;">
+        {{ location.locationname }}
+        </a>
+
       </p>
 
       {% if current_user.is_authenticated and event.creatorid == current_user.user_id %}
         <div class="event-actions">
-        <!-- Edit/Delete links temporarily disabled until routes are implemented -->
-        <span class="edit-btn disabled">Edit (coming soon)</span>
-        <span class="delete-btn disabled">Delete (coming soon)</span>
-    </div>
+        <a href="{{ url_for('edit_event', event_id=event.eventid) }}" class="edit-btn">Edit</a>
+
+        <form action="{{ url_for('delete_event', event_id=event.eventid) }}" method="POST" style="display:inline;">
+          <button type="submit" class="delete-btn">Delete</button>
+        </form>
+  </div>
     {% endif %}
     </div>
   </div>

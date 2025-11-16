@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register</title>
+  <title>Edit Event</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
   <style>
     .form-wrapper {
       max-width: 600px;
@@ -28,7 +27,7 @@
       color: #444;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 10px;
       margin-top: 6px;
@@ -54,21 +53,23 @@
       background-color: #246b45;
     }
 
-    .login-link {
-      display: block;
+    .cancel-btn {
+      display: inline-block;
+      margin-top: 10px;
+      width: 100%;
       text-align: center;
-      margin-top: 15px;
-      font-size: 1em;
-      color: #2e8b57;
+      padding: 12px;
+      background-color: #555;
+      color: white;
       text-decoration: none;
+      border-radius: 15px;
+      font-size: 1.1em;
     }
-
-    .login-link:hover {
-      text-decoration: underline;
+    .cancel-btn:hover {
+      background-color: #333;
     }
   </style>
 </head>
-
 <body>
 
 <header id="mainHeader">
@@ -85,27 +86,42 @@
 </header>
 
 <div class="form-wrapper">
-  <h1>Create an Account</h1>
+  <h1>Edit Event</h1>
 
-  <form method="POST">
+  <form action="{{ url_for('edit_event', event_id=event.eventid) }}" method="POST">
 
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" required>
+    <label for="eventname">Event Name:</label>
+    <input type="text" id="eventname" name="eventname" value="{{ event.eventname }}" required>
 
-    <label for="password">Password:</label>
-    <input type="password" id="password" name="password" required>
+    <label for="category">Category:</label>
+    <input type="text" id="category" name="category" value="{{ event.category }}" required>
 
-    <button type="submit">Register</button>
+    <label for="status">Status:</label>
+    <select id="status" name="status" required>
+      <option value="Complete" {% if event.status == "Complete" %}selected{% endif %}>Complete</option>
+      <option value="Uncomplete" {% if event.status == "Uncomplete" %}selected{% endif %}>Uncomplete</option>
+    </select>
+
+    <label for="eventtime">Time:</label>
+    <input type="time" id="eventtime" name="eventtime"
+      value="{{ event.eventtime.strftime('%H:%M') if event.eventtime else '' }}"
+      required>
+
+    <label for="location_name">Location:</label>
+    <input type="text" id="location_name" name="location_name" value="{{ location.locationname }}" required>
+
+    <button type="submit">Save Changes</button>
   </form>
 
-  <a class="login-link" href="{{ url_for('login') }}">Already have an account? Login</a>
+  <a href="{{ url_for('index') }}" class="cancel-btn">Cancel</a>
+
 </div>
 
 <script>
-  const header = document.getElementById('mainHeader');
-  window.addEventListener('scroll', () => {
-    header.classList.toggle('shrink', window.scrollY > 50);
-  });
+const header = document.getElementById('mainHeader');
+window.addEventListener('scroll', () => {
+  header.classList.toggle('shrink', window.scrollY > 50);
+});
 </script>
 
 </body>
