@@ -11,12 +11,36 @@
 <header id="mainHeader">
   <div class="left-section">
     <a href="#" class="logo-link">
-      <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="My Logo" class="logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="My Logo" class="logo">
     </a>
     <div>Web Beep</div>
   </div>
 
   <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
+
+    <div class="search-container">
+      <form method="GET" action="{{ url_for('index') }}" style="display:flex; gap:5px;">
+        <input type="text" id="searchInput" placeholder="Search...">
+        <select id="searchField">
+          <option value="eventname">Event Name</option>
+          <option value="location">Event Location</option>
+          <option value="creator">Event Creator</option>
+        </select>
+    
+       {% if request.args.get('my') == '1' %}
+          <input type="hidden" name="my" value="1">
+       {% endif %}
+
+        <button type="submit">Search</button>
+      </form>
+    </div>
+
+    <label style="display:flex; align-items:center; gap:8px; margin:15px;">
+      <input type="checkbox" id="myEventsToggle"
+            {% if request.args.get('my') == '1' %} checked {% endif %}>
+      Show My Events Only
+      </label>
+      
     {% if current_user.is_authenticated %}
       <a href="{{ url_for('add_event') }}" class="profile-link">Add Event</a>
       <a href="#" class="profile-link">Profile</a>
@@ -26,25 +50,31 @@
       <a href="{{ url_for('register') }}" class="profile-link">Register</a>
     {% endif %}
 
-    <div class="search-container">
-      <input type="text" placeholder="Search...">
-      <button>Search</button>
-    </div>
+    
   </div>
 </header>
 
 <main>
   <div class="grid-container">
-    {% for event, location in events %}
-      <div class="grid-item" data-modal="modal{{ event.eventid }}">
-        <img src="{{ url_for('static', filename='images/placeholder.png') }}" alt="Placeholder">
-        <p>{{ event.eventname }}</p>
-      </div>
+    {% for event, location, creator in events %}
+        {% set random_color = "#%06x"|format(range(0, 0xFFFFFF)|random) %}
+        <div class="grid-item" 
+            data-modal="modal{{ event.eventid }}"
+            data-location="{{ location.locationname }}"
+            data-creator="{{ creator.username }}">
+          
+          
+          <div class="color-placeholder" style="background-color: {{ random_color }};"></div>
+
+          <p>{{ event.eventname }}</p>
+        </div>
     {% endfor %}
   </div>
 </main>
 
-{% for event, location in events %}
+
+
+{% for event, location, creator in events %}
   <div id="modal{{ event.eventid }}" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -60,23 +90,67 @@
         style="color: #2e8b57; text-decoration: underline; cursor: pointer;">
         {{ location.locationname }}
         </a>
-
       </p>
 
       {% if current_user.is_authenticated and event.creatorid == current_user.user_id %}
         <div class="event-actions">
-        <a href="{{ url_for('edit_event', event_id=event.eventid) }}" class="edit-btn">Edit</a>
+          <a href="{{ url_for('edit_event', event_id=event.eventid) }}" class="edit-btn">
+            Edit Event
+          </a>
+          <form action="{{ url_for('delete_event', event_id=event.eventid) }}" method="POST" style="display:inline;">
+            <button type="submit" class="delete-btn">
+              Delete Event
+            </button>
+          </form>
+        </div>
+      {% endif %}
 
-        <form action="{{ url_for('delete_event', event_id=event.eventid) }}" method="POST" style="display:inline;">
-          <button type="submit" class="delete-btn">Delete</button>
-        </form>
-  </div>
-    {% endif %}
+      {% if current_user.is_authenticated %}
+       {% if current_user.user_id != event.creatorid %}
+         <!-- RSVP button for users who are not the creator -->
+          <form action="{{ url_for('rsvp_event', event_id=event.eventid) }}" method="POST">
+            <button type="submit">
+             {% if current_user.user_id in event_rsvp_dict.get(event.eventid, []) %}
+                Cancel RSVP
+              {% else %}
+                RSVP
+             {% endif %}
+            </button>
+         </form>
+       {% else %}
+         <!-- Show list of RSVPs for event creators -->
+         <h4>RSVPs:</h4>
+         <ul>
+            {% for user in event_rsvp_dict.get(event.eventid, []) %}
+             <li>{{ user }}</li>
+            {% endfor %}
+         </ul>
+        {% endif %}
+      {% endif %}
     </div>
   </div>
 {% endfor %}
 
+
 <script>
+
+// Filter events when toggle is used
+document.getElementById("myEventsToggle")?.addEventListener("change", function () {
+    const myOnly = this.checked;
+    
+    // call backend to reload page with filter
+    const url = new URL(window.location.href);
+    
+    if (myOnly) {
+        url.searchParams.set("my", "1");
+    } else {
+        url.searchParams.delete("my");
+    }
+
+    // reload with new query string
+    window.location.href = url.toString();
+});
+
 const header = document.getElementById('mainHeader');
 window.addEventListener('scroll', () => {
   header.classList.toggle('shrink', window.scrollY > 50);
@@ -103,6 +177,54 @@ window.addEventListener('click', (e) => {
   if (e.target.classList.contains('modal')) {
     e.target.style.display = 'none';
   }
+});
+
+const searchInput = document.getElementById("searchInput");
+
+// live filter
+searchInput.addEventListener("input", function () {
+    const query = this.value.toLowerCase().trim();
+
+    document.querySelectorAll(".grid-item").forEach(item => {
+        const eventName = item.querySelector("p").textContent.toLowerCase();
+
+        // Show or hide
+        if (eventName.includes(query)) {
+            item.style.display = "block";
+        } else {
+            item.style.display = "none";
+        }
+    });
+});
+
+
+const searchField = document.getElementById("searchField");
+
+searchInput.addEventListener("input", function () {
+    const query = this.value.toLowerCase().trim();
+    const field = searchField.value;
+
+    document.querySelectorAll(".grid-item").forEach(item => {
+        let textToSearch = "";
+
+        switch(field) {
+            case "eventname":
+                textToSearch = item.querySelector("p").textContent.toLowerCase();
+                break;
+            case "location":
+                textToSearch = item.dataset.location.toLowerCase();
+                break;
+            case "creator":
+                textToSearch = item.dataset.creator.toLowerCase();
+                break;
+        }
+
+        if (textToSearch.includes(query)) {
+            item.style.display = "block";
+        } else {
+            item.style.display = "none";
+        }
+    });
 });
 </script>
 

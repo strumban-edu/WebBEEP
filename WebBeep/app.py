@@ -60,6 +60,14 @@ class Event(db.Model):
     creatorid = db.Column(db.Integer, db.ForeignKey("User.user_id"))
 
 
+class RSVP(db.Model):
+    __tablename__ = "RSVP"
+    rsvp_id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey("Event.eventid"))
+    user_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
+
+
+
 # -------------------------
 # LOGIN SETUP
 # -------------------------
@@ -80,8 +88,45 @@ def load_user(user_id):
 
 @app.route("/")
 def index():
-    events = db.session.query(Event, Location).join(Location).all()
-    return render_template("WebBeepMockup.html", events=events)
+    show_mine = request.args.get("my") == "1"
+    search = request.args.get("search", "")
+    search_field = request.args.get("field", "eventname")
+
+    # Base query joining Location and User for creator username
+    query = db.session.query(Event, Location, User)\
+        .join(Location, Event.locationid == Location.locationid)\
+        .join(User, Event.creatorid == User.user_id)
+
+    # Filter for "My Events Only"
+    if current_user.is_authenticated and show_mine:
+        query = query.filter(Event.creatorid == current_user.user_id)
+
+    # Search filter
+    if search:
+        search_pattern = f"%{search}%"
+        if search_field == "eventname":
+            query = query.filter(Event.eventname.ilike(search_pattern))
+        elif search_field == "location":
+            query = query.filter(Location.locationname.ilike(search_pattern))
+        elif search_field == "creator":
+            query = query.filter(User.username.ilike(search_pattern))
+
+    events = query.all()
+
+    #RSVP dictionary
+    rsvp_rows = db.session.query(RSVP.event_id, User.username)\
+        .join(User, RSVP.user_id == User.user_id)\
+        .all()
+
+    event_rsvp_dict = {}
+    for event_id, username in rsvp_rows:
+        event_rsvp_dict.setdefault(event_id, []).append(username)
+
+    return render_template("WebBeepMockup.html", events=events, event_rsvp_dict=event_rsvp_dict)
+
+
+
+
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -196,16 +241,32 @@ def edit_event(event_id):
 def delete_event(event_id):
     event = Event.query.get_or_404(event_id)
 
-    # Check ownership correctly
     if event.creatorid != current_user.user_id:
-        return "Unauthorized", 403
+        abort(403)
+
+    RSVP.query.filter_by(event_id=event.eventid).delete()
 
     db.session.delete(event)
     db.session.commit()
-    return redirect("/")
+    return redirect(url_for("index"))
 
 
-
+@app.route("/rsvp/<int:event_id>", methods=["POST"])
+@login_required
+def rsvp_event(event_id):
+    # Check if RSVP already exists
+    rsvp = RSVP.query.filter_by(event_id=event_id, user_id=current_user.user_id).first()
+    
+    if rsvp:
+        # Cancel RSVP
+        db.session.delete(rsvp)
+    else:
+        # Add RSVP
+        new_rsvp = RSVP(event_id=event_id, user_id=current_user.user_id)
+        db.session.add(new_rsvp)
+    
+    db.session.commit()
+    return redirect(url_for("index"))
 
 
 
