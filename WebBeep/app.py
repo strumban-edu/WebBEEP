@@ -16,25 +16,29 @@ def get_db_connection():
     )
     return conn
 
+
+# HOME PAGE
 @app.route('/')
 def index():
     conn = get_db_connection()
     cur = conn.cursor()
-    
-    cur.execute('''
+    comm = '''
         SELECT e.eventid, e.eventname, e.category, e.status, e.eventtime, l.locationname
         FROM "Event" e
         JOIN "Location" l ON e.locationid = l.locationid
         ORDER BY e.eventid;
-    ''')
+    '''
     
+    cur.execute(comm)
     events = cur.fetchall()
+    
     cur.close()
     conn.close()
     
     return render_template('WebBeepMockup.html', events=events)
 
 
+# EVENT ADDING PAGE
 @app.route('/add-event', methods=['GET', 'POST'])
 def add_event():
     if request.method == 'POST':
@@ -47,18 +51,22 @@ def add_event():
 
         conn = get_db_connection()
         cur = conn.cursor()
-
-        cur.execute("""
+        # FIRST COMMAND
+        comm = """
             INSERT INTO "Location" (locationname, locationaddress)
             VALUES (%s, %s)
             RETURNING locationid;
-        """, (location_name, location_address))
+        """
+
+        cur.execute(comm, (location_name, location_address))
         locationid = cur.fetchone()[0]
 
-        cur.execute("""
+        # SECOND COMMAND
+        comm = """
             INSERT INTO "Event" (eventname, category, status, eventtime, creatorid, locationid)
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (eventname, category, status, eventtime, 1, locationid))
+        """
+        cur.execute(comm, (eventname, category, status, eventtime, 1, locationid))
 
         conn.commit()
         cur.close()
