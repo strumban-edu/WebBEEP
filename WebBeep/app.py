@@ -268,7 +268,15 @@ def rsvp_event(event_id):
     db.session.commit()
     return redirect(url_for("index"))
 
+@app.route("/profile")
+@login_required
+def profile():
+    created_events = Event.query.filter_by(creatorid=current_user.user_id).all()
 
+    rsvped_events = db.session.query(Event).join(RSVP, Event.eventid == RSVP.event_id)\
+                      .filter(RSVP.user_id == current_user.user_id).all()
+    
+    return render_template("profile.html" ,created_events=created_events, rsvped_events=rsvped_events)
 
 
 # -------------------------

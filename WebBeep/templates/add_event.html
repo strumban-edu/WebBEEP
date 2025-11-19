@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add Event</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
   <style>
     .form-wrapper {
       max-width: 600px;
@@ -59,9 +60,8 @@
   <header id="mainHeader">
     <div class="left-section">
       <a href="{{ url_for('index') }}" class="logo-link">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="WebBeep Logo" class="logo" style="filter: drop-shadow(0 0 2px #79fcfcff);">
       </a>
-      <div>Web Beep</div>
     </div>
 
     <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
@@ -83,7 +83,7 @@
       <label for="status">Status:</label>
       <select id="status" name="status" required>
         <option value="Complete">Complete</option>
-        <option value="Uncomplete">Uncomplete</option>
+        <option value="Incomplete">Incomplete</option>
       </select>
 
       <label for="eventtime">Time:</label>

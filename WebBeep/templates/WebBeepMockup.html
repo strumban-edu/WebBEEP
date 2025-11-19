@@ -44,7 +44,7 @@
       
     {% if current_user.is_authenticated %}
       <a href="{{ url_for('add_event') }}" class="profile-link">Add Event</a>
-      <a href="#" class="profile-link">Profile</a>
+      <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
       <a href="{{ url_for('logout') }}" class="profile-link">Logout</a>
     {% else %}
       <a href="{{ url_for('login') }}" class="profile-link">Login</a>

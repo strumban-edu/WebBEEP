@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+  <style>
+    .profile-container {
+      max-width: 800px;
+      margin: 180px auto 50px auto;
+      background: white;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      animation: fadeIn 0.4s ease;
+    }
+
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .section {
+      margin-top: 35px;
+    }
+
+    .event-card {
+      background: #f6f6f6;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border-left: 5px solid #2e8b57;
+    }
+
+    .event-card p {
+      margin: 5px 0;
+    }
+
+    .no-events {
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <header id="mainHeader">
+    <div class="left-section">
+      <a href="{{ url_for('index') }}" class="logo-link">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="WebBeep Logo" class="logo" style="filter: drop-shadow(0 0 2px #79fcfcff);">
+      </a>
+    </div>
+
+    <div class="right-section">
+      <a href="{{ url_for('index') }}" class="profile-link">Home</a>
+      <a href="{{ url_for('logout') }}" class="profile-link">Logout</a>
+    </div>
+  </header>
+
+<div class="profile-container">
+  <h1>Welcome, {{ current_user.username }}!</h1>
+
+  <div class="section">
+    <h2>Your Created Events</h2>
+
+    {% if created_events %}
+      {% for event in created_events %}
+        <div class="event-card">
+          <p><strong>{{ event.eventname }}</strong></p>
+          <p>Status: {{ event.status }}</p>
+          <p>Time: {{ event.eventtime }}</p>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-events">You haven't created any events yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="section">
+    <h2>Your RSVPs</h2>
+
+    {% if rsvped_events %}
+      {% for event in rsvped_events %}
+        <div class="event-card">
+          <p><strong>{{ event.eventname }}</strong></p>
+          <p>Status: {{ event.status }}</p>
+          <p>Time: {{ event.eventtime }}</p>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-events">You have not RSVPed to any events.</p>
+    {% endif %}
+  </div>
+
+  <script>
+    const header = document.getElementById('mainHeader');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('shrink', window.scrollY > 50);
+    });
+  </script>
+
+</body>
+</html>
