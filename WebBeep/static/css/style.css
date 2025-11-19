@@ -192,6 +192,139 @@ main {
     color: red;
 }
 
+.event-actions {
+   display: flex;
+  gap: 12px;
+  margin: 18px auto 0 auto;
+  justify-content: center;
+  align-items: center;
+  max-width: 420px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+
+
+.edit-btn {
+  padding: 10px 18px;
+  background-color: #2e8b57;
+  color: white;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1em;
+  transition: background 0.25s ease, transform 0.1s ease;
+}
+
+.edit-btn:hover {
+  background-color: #246b45;
+  transform: scale(1.03);
+}
+
+.delete-btn {
+  padding: 10px 18px;
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.1s ease;
+}
+
+.delete-btn:hover {
+  background-color: #992d22;
+  transform: scale(1.03);
+}
+
+.toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 15px;
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 45px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 22px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4caf50;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+}
+
+.search-container input[type="text"] {
+    width: 180px;          
+    max-width: 180px;      
+    padding: 6px 8px;
+}
+
+.search-container button {
+    padding: 6px 10px;
+}
+
+.right-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    white-space: nowrap;
+}
+
+.color-placeholder {
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+
 @keyframes fadeIn {
     from {opacity: 0;}
     to {opacity: 1;}
