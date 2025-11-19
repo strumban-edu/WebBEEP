@@ -1,12 +1,12 @@
 body {
-    background-color: #bcb5b5;
+    background-color: #e9e2e2;
     margin: 0;
     font-family: Arial, sans-serif;
 }
 
 /*Header*/
 header {
-    background-color: lightgreen;
+    background-color: #2c8fc9;
     color: black;
     display: flex;
     align-items: center;
@@ -38,8 +38,8 @@ header {
 }
 
 .profile-link {
-    font-size: 0.5em;
-    background-color: #2e8b57;
+    font-size: .7em;
+    background-color: #196c92;
     color: white;
     padding: 8px 16px;
     border-radius: 20px;
@@ -48,34 +48,42 @@ header {
 }
 
 .profile-link:hover {
-    background-color: #246b45;
+    background-color: #145377;
 }
 
 .search-container {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    width: clamp(160px, 22vw, 260px);
+    width: clamp(200px, 22vw, 600px);
     flex-shrink: 0;
 }
 
 .search-container input[type="text"] {
     flex: 1;
     padding: 8px 12px;
-    font-size: 1em;
-    border: 1px solid #ccc;
+    font-size: .8em;
+    color:black;
+    border: 2px solid #005167;
     border-radius: 20px;
+    background-color: #ffffff48;
     outline: none;
     min-width: 0;
 }
 
+/* Placeholder style */
+.search-container input[type="text"]::placeholder {
+    color: #00000083;
+    opacity: 1;
+}
+
 .search-container button {
-    margin-left: 8px;
+    margin-left: 1px;
     padding: 8px 12px;
-    font-size: 1em;
+    font-size: .5em;
     border: none;
     border-radius: 20px;
-    background-color: #2e8b57;
+    background-color: #00495F; 
     color: white;
     cursor: pointer;
     transition: background-color 0.3s;
@@ -83,14 +91,28 @@ header {
 }
 
 .search-container button:hover {
-    background-color: #246b45;
+    background-color: #033646;
+}
+
+.search-container form {
+  display: flex;
+  gap: 5px;           
+  align-items: center;
+}
+
+#searchField {
+  padding: 8px 10px;
+  font-size: 16px;
+  border: 2px solid #005167;
+  border-radius: 5px;
+  background-color: #d4e9f5c2;
 }
 
 header.shrink {
     padding: 20px 5vw;
     font-size: 1.6em;
     opacity: 0.95;
-    background-color: #90ee90;
+    background-color: #2c8fc9;
 }
 
 header.shrink .logo {
@@ -193,7 +215,7 @@ main {
 }
 
 .event-actions {
-   display: flex;
+  display: flex;
   gap: 12px;
   margin: 18px auto 0 auto;
   justify-content: center;
@@ -283,7 +305,7 @@ main {
 }
 
 input:checked + .slider {
-  background-color: #4caf50;
+  background-color: #2c8fc9;
 }
 
 input:checked + .slider:before {
@@ -295,6 +317,7 @@ input:checked + .slider:before {
   font-weight: 500;
 }
 
+/* Redundant
 .search-container {
     display: flex;
     align-items: center;
@@ -308,7 +331,7 @@ input:checked + .slider:before {
 
 .search-container button {
     padding: 6px 10px;
-}
+} */
 
 .right-section {
     display: flex;

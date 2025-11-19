@@ -56,14 +56,15 @@
     .cancel-btn {
       display: inline-block;
       margin-top: 10px;
-      width: 100%;
+      width: 96%;
       text-align: center;
       padding: 12px;
       background-color: #555;
       color: white;
       text-decoration: none;
       border-radius: 15px;
-      font-size: 1.1em;
+      font-size: 1.2em;
+      transition: background 0.3s ease;
     }
     .cancel-btn:hover {
       background-color: #333;
@@ -99,7 +100,7 @@
     <label for="status">Status:</label>
     <select id="status" name="status" required>
       <option value="Complete" {% if event.status == "Complete" %}selected{% endif %}>Complete</option>
-      <option value="Uncomplete" {% if event.status == "Uncomplete" %}selected{% endif %}>Uncomplete</option>
+      <option value="Incomplete" {% if event.status == "Incomplete" %}selected{% endif %}>Incomplete</option>
     </select>
 
     <label for="eventtime">Time:</label>

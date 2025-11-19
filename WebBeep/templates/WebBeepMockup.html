@@ -5,21 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WebBeep</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
 </head>
 <body>
 
 <header id="mainHeader">
   <div class="left-section">
     <a href="#" class="logo-link">
-      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="My Logo" class="logo">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="WebBeep Logo" class="logo" style="filter: drop-shadow(0 0 2px #79fcfcff);">
+      <img src="{{ url_for('static', filename='images/text_logo.png') }}" alt="WebBeep" class="logo" style="filter: drop-shadow(0px 5px 2px rgba(0, 0, 0, .3));">
     </a>
-    <div>Web Beep</div>
   </div>
 
   <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
 
     <div class="search-container">
-      <form method="GET" action="{{ url_for('index') }}" style="display:flex; gap:5px;">
+      <form method="GET" action="{{ url_for('index') }}">
         <input type="text" id="searchInput" placeholder="Search...">
         <select id="searchField">
           <option value="eventname">Event Name</option>
@@ -35,7 +36,7 @@
       </form>
     </div>
 
-    <label style="display:flex; align-items:center; gap:8px; margin:15px;">
+    <label style="display:flex; align-items:center; gap:0px; margin:15px; font-size:15px;">
       <input type="checkbox" id="myEventsToggle"
             {% if request.args.get('my') == '1' %} checked {% endif %}>
       Show My Events Only
