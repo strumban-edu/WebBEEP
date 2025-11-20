@@ -72,7 +72,7 @@
   <div class="form-wrapper">
     <h1>Add a New Event</h1>
 
-    <form action="{{ url_for('add_event') }}" method="POST">
+    <form action="{{ url_for('add_event') }}" method="POST" enctype="multipart/form-data">
 
       <label for="eventname">Event Name:</label>
       <input type="text" id="eventname" name="eventname" required>
@@ -92,6 +92,8 @@
       <label for="location_choice">Location:</label>
       <input type="text" id="location_name" name="location_name" required>
       
+      <label for="event_image">Upload Image:</label>
+      <input type="file" id="event_image" name="event_image" accept="image/*">
 
       <button type="submit">Add Event</button>
     </form>

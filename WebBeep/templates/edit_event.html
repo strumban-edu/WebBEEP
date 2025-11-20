@@ -89,7 +89,7 @@
 <div class="form-wrapper">
   <h1>Edit Event</h1>
 
-  <form action="{{ url_for('edit_event', event_id=event.eventid) }}" method="POST">
+  <form action="{{ url_for('edit_event', event_id=event.eventid) }}" method="POST" enctype="multipart/form-data">
 
     <label for="eventname">Event Name:</label>
     <input type="text" id="eventname" name="eventname" value="{{ event.eventname }}" required>
@@ -110,6 +110,22 @@
 
     <label for="location_name">Location:</label>
     <input type="text" id="location_name" name="location_name" value="{{ location.locationname }}" required>
+
+    <label for="event_image">Upload Image:</label>
+
+    {% if event.event_image %}
+      <div>
+        <img src="{{ url_for('static', filename='uploads/' + event.event_image) }}" alt="Current Event Image" style="max-width: 200px;">
+      </div>
+
+        <!-- REMOVE IMAGE CHECKBOX/TOGGLE -->
+      <div class="remove-image-row">
+          <input type="checkbox" id="remove_image" name="remove_image" value="true">
+          <label for="remove_image">Remove current image</label>
+      </div>
+
+    {% endif %}
+    <input type="file" id="event_image" name="event_image" accept="image/*">
 
     <button type="submit">Save Changes</button>
   </form>
