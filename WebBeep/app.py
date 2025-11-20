@@ -6,6 +6,7 @@ from flask_login import (
     login_required, current_user, UserMixin
 )
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import os
 from dotenv import load_dotenv
 
@@ -13,6 +14,9 @@ load_dotenv("dotenv.env")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "devkey")
+
+UPLOAD_FOLDER = "static/uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # -------------------------
 # Database CONFIG
@@ -58,6 +62,7 @@ class Event(db.Model):
     eventtime = db.Column(db.Time)
     locationid = db.Column(db.Integer, db.ForeignKey("Location.locationid"))
     creatorid = db.Column(db.Integer, db.ForeignKey("User.user_id"))
+    event_image = db.Column(db.String(255), nullable=True)
 
 
 class RSVP(db.Model):
@@ -186,13 +191,13 @@ def add_event():
         location_name = request.form["location_name"]
         location_address = request.form.get("location_address", "")
 
-        # Create location row
-        loc = Location(
-            locationname=location_name,
-            locationaddress=location_address
-        )
-        db.session.add(loc)
-        db.session.flush()  # get locationid
+        # Get or Create Location
+        location = Location.query.filter_by(locationname=location_name).first()
+
+        if not location:
+            location = Location(locationname=location_name, locationaddress=location_address)
+            db.session.add(location)
+            db.session.flush()  # gets assigned locationid
 
         # Create event row
         event = Event(
@@ -201,10 +206,23 @@ def add_event():
             status=status,
             eventtime=eventtime,
             creatorid=current_user.user_id,
-            locationid=loc.locationid
+            locationid=location.locationid,
+            event_image=None
         )
-
+        
         db.session.add(event)
+        db.session.flush()
+
+        # Handle image upload
+        image_file = request.files.get("event_image")
+        
+        if image_file and image_file.filename:
+            extension = image_file.filename.rsplit('.', 1)[1].lower()
+            filename = f"{event.eventid}_image.{extension}" 
+            image_path = os.path.join(UPLOAD_FOLDER, filename)
+            image_file.save(image_path)
+            event.event_image = filename
+
         db.session.commit()
 
         return redirect("/")
@@ -227,6 +245,31 @@ def edit_event(event_id):
         event.category = request.form["category"]
         event.status = request.form["status"]
         event.eventtime = request.form["eventtime"]
+        
+        # Remove image
+        remove_image = request.form.get("remove_image")
+        if remove_image == "true" and event.event_image:
+            old_image_path = os.path.join(UPLOAD_FOLDER, event.event_image)
+            if os.path.exists(old_image_path):
+                os.remove(old_image_path)
+                
+            event.event_image = None
+
+        # Upload new image
+        image_file = request.files.get("event_image")
+
+        if image_file and image_file.filename:  
+            if event.event_image:
+                old_image_path = os.path.join(UPLOAD_FOLDER, event.event_image)
+                if os.path.exists(old_image_path):
+                    os.remove(old_image_path)
+            
+            extension = image_file.filename.rsplit('.', 1)[1].lower()
+            filename = f"{event_id}_image.{extension}" 
+            image_path = os.path.join(UPLOAD_FOLDER, filename)
+    
+            image_file.save(image_path)
+            event.event_image = filename
 
         # Update location name if present
         location.locationname = request.form["location_name"]
@@ -245,6 +288,12 @@ def delete_event(event_id):
         abort(403)
 
     RSVP.query.filter_by(event_id=event.eventid).delete()
+    
+        # Delete image if present
+    if event.event_image:
+        image_path = os.path.join(UPLOAD_FOLDER, event.event_image)
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
     db.session.delete(event)
     db.session.commit()
