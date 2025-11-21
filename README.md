@@ -13,7 +13,8 @@
             - This is denoted by a '(venv)' at the beginning of each line in the terminal
 3. __Installing the Requirements__
     - In the 'Terminal' run the following code in the Virtual Environment:
+        - **cd WebBeep** (ensures you are in the correct folder where requirements.txt is)
         - **"pip install -r requirements.txt"**
-4. __Running the App__
+5. __Running the App__
     - In the 'Terminal' run the following code in the Virtual Environment:
-        - **"python app.py"**
+        - **"python -m flask run"**
