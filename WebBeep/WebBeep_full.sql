@@ -59,7 +59,8 @@ CREATE TABLE public."Event" (
     status character varying(255),
     eventtime time without time zone,
     creatorid integer NOT NULL,
-    locationid integer NOT NULL
+    locationid integer NOT NULL,
+    event_image character varying(255)
 );
 
 
