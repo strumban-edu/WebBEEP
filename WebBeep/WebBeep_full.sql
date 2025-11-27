@@ -171,6 +171,13 @@ ALTER SEQUENCE public."Location_locationid_seq" OWNED BY public."Location".locat
 -- Name: User; Type: TABLE; Schema: public; Owner: postgres
 --
 
+CREATE TABLE public."RSVP"(
+    event_id integer Not Null,
+    user_id integer NOT NULL
+);
+
+ALTER TABLE public."RSVP" OWNER TO postgres;
+
 CREATE TABLE public."User" (
     user_id integer NOT NULL,
     firstname character varying(255),

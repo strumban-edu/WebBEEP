@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .nav{
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        a{
+            margin: 0 15px;
+            text-decoration: none;
+            color: #007BFF;
+        }
+        a:hover{
+            text-decoration: underline;
+        }
+    </style>
+    </head>
+    <body>
+        <div class = "nav">
+            <a href = "/calendar/{{prev_year}}/{{prev_month}}">Previous</a>
+            <a href = "/calendar/{{next_year}}/{{next_month}}">Next</a>
+        </div>
+        <div>
+            {{ calendar|safe }}
+        </div>
+    </body>
+</html>

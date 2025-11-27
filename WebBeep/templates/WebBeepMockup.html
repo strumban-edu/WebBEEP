@@ -43,6 +43,7 @@
       </label>
       
     {% if current_user.is_authenticated %}
+      <a href ="{{ url_for('calendar') }}" class="profile-link">Calendar</a>
       <a href="{{ url_for('add_event') }}" class="profile-link">Add Event</a>
       <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
       <a href="{{ url_for('logout') }}" class="profile-link">Logout</a>

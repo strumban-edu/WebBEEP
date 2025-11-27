@@ -1,4 +1,7 @@
 import sqlite3
+import calendar as calmod
+from datetime import date
+from flask import redirect
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
@@ -228,6 +231,37 @@ def add_event():
         return redirect("/")
 
     return render_template("add_event.html")
+
+#Calendar generation
+def generate_calendar(year, month):
+    cal = calmod.HTMLCalendar(calmod.SUNDAY)
+    return cal.formatmonth(year, month, withyear=True)
+
+@app.route("/calendar")
+@login_required
+def calendar():
+    today = date.today()
+    return redirect(f"/calendar/{today.year}/{today.month}")
+
+@app.route("/calendar/<int:year>/<int:month>")
+@login_required
+def calendar_view(year, month):
+    html_cal = generate_calendar(year, month)
+
+    #Previous months and next month calculation:
+    prev_year, prev_month = (year, month -1) if month > 1 else(year -1, 12)
+    next_year, next_month = (year, month +1) if month < 12 else(year +1, 1)
+
+    return render_template(
+        "calendar.html",
+        calendar=html_cal,
+        year=year,
+        month=month,
+        prev_year=prev_year,
+        prev_month=prev_month,
+        next_year=next_year,
+        next_month=next_month
+    )
 
 @app.route('/edit_event/<int:event_id>', methods=['GET', 'POST'])
 @login_required
