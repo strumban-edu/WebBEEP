@@ -1,6 +1,7 @@
 import sqlite3
 import calendar as calmod
 from datetime import date
+from datetime import datetime
 from flask import redirect
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
@@ -66,6 +67,7 @@ class Event(db.Model):
     locationid = db.Column(db.Integer, db.ForeignKey("Location.locationid"))
     creatorid = db.Column(db.Integer, db.ForeignKey("User.user_id"))
     event_image = db.Column(db.String(255), nullable=True)
+    event_date = db.Column(db.Date, nullable=True)
 
 
 class RSVP(db.Model):
@@ -73,6 +75,19 @@ class RSVP(db.Model):
     rsvp_id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey("Event.eventid"))
     user_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
+
+class EventCalendar(calmod.HTMLCalendar):
+    def __init__(self, events):
+        super().__init__()
+        self.events = events
+
+    def formatday(self, day, weekday):
+        events_html = ''
+        for event in self.events.get(day, []):
+            events_html += f'<li>{event.eventname} at {event.eventtime}</li>'
+        if day != 0:
+            return f"<td><span class='date'>{day}</span><ul>{events_html}</ul></td>"
+        return "<td></td>"
 
 
 
@@ -188,6 +203,7 @@ def add_event():
         eventname = request.form["eventname"]
         category = request.form["category"]
         status = request.form["status"]
+        eventdate = datetime.strptime(request.form["event_date"], "%Y-%m-%d").date()
         eventtime = request.form["eventtime"]
 
         # Location info
@@ -207,10 +223,11 @@ def add_event():
             eventname=eventname,
             category=category,
             status=status,
+            event_date=eventdate,
             eventtime=eventtime,
             creatorid=current_user.user_id,
             locationid=location.locationid,
-            event_image=None
+            event_image=None,
         )
         
         db.session.add(event)
@@ -233,9 +250,9 @@ def add_event():
     return render_template("add_event.html")
 
 #Calendar generation
-def generate_calendar(year, month):
-    cal = calmod.HTMLCalendar(calmod.SUNDAY)
-    return cal.formatmonth(year, month, withyear=True)
+def generate_calendar(year, month, events_by_day):
+    cal = EventCalendar(events_by_day)
+    return cal.formatmonth(year, month)
 
 @app.route("/calendar")
 @login_required
@@ -246,7 +263,18 @@ def calendar():
 @app.route("/calendar/<int:year>/<int:month>")
 @login_required
 def calendar_view(year, month):
-    html_cal = generate_calendar(year, month)
+
+    month_events = Event.query.filter(
+        Event.creatorid == current_user.user_id,
+        db.extract('year', Event.event_date) == year,
+        db.extract('month', Event.event_date) == month
+    ).all()
+
+    events_by_day = {}
+    for event in month_events:
+        events_by_day.setdefault(event.event_date.day, []).append(event)
+
+    html_cal = generate_calendar(year, month, events_by_day)
 
     #Previous months and next month calculation:
     prev_year, prev_month = (year, month -1) if month > 1 else(year -1, 12)
@@ -279,7 +307,7 @@ def edit_event(event_id):
         event.category = request.form["category"]
         event.status = request.form["status"]
         event.eventtime = request.form["eventtime"]
-        
+        event.event_date = datetime.strptime(request.form["event_date"], "%Y-%m-%d").date()        
         # Remove image
         remove_image = request.form.get("remove_image")
         if remove_image == "true" and event.event_image:
