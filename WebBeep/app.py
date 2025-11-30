@@ -2,9 +2,11 @@ import sqlite3
 import calendar as calmod
 from datetime import date
 from datetime import datetime
-from flask import redirect
+from flask import flash, redirect
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from PIL import Image
+from pillow_heif import register_heif_opener
 from flask_login import (
     LoginManager, login_user, logout_user,
     login_required, current_user, UserMixin
@@ -43,6 +45,7 @@ class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    profile_pic = db.Column(db.String(255), nullable=True)
 
     def get_id(self):
         # Flask-Login expects a string ID
@@ -147,16 +150,12 @@ def index():
 
     return render_template("WebBeepMockup.html", events=events, event_rsvp_dict=event_rsvp_dict)
 
-
-
-
-
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+        image_file = request.files.get("profile_pic")
 
         # Check for existing username
         if User.query.filter_by(username=username).first():
@@ -166,6 +165,15 @@ def register():
         new_user = User(username=username, password=hashed_pw)
 
         db.session.add(new_user) 
+        db.session.flush()
+
+        if image_file and image_file.filename:
+            ext = image_file.filename.rsplit('.', 1)[1].lower()
+            filename = f"{new_user.user_id}_profile.{ext}"
+            filepath = os.path.join(UPLOAD_FOLDER, filename)
+            image_file.save(filepath)
+            new_user.profile_pic = filename
+
         db.session.commit()
         return redirect("/login")
 
@@ -386,9 +394,70 @@ def profile():
 
     rsvped_events = db.session.query(Event).join(RSVP, Event.eventid == RSVP.event_id)\
                       .filter(RSVP.user_id == current_user.user_id).all()
-    
     return render_template("profile.html" ,created_events=created_events, rsvped_events=rsvped_events)
 
+#Profile Picture Upload
+@app.route("/upload_profile_pic", methods=["POST"])
+@login_required
+def upload_profile_pic():
+    image_file = request.files.get("profile_pic")
+
+    if not image_file or not image_file.filename:
+        return redirect(url_for("profile"))
+    
+    #Deleting old image if it exists
+    if current_user.profile_pic:
+        old_image_path = os.path.join(UPLOAD_FOLDER, current_user.profile_pic)
+        if os.path.exists(old_image_path):
+            os.remove(old_image_path)
+    
+    #Saving new image
+    ext = image_file.filename.rsplit('.', 1)[1].lower()
+    filename = f"{current_user.user_id}_profile.{ext}"
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    image_file.save(filepath)
+
+    #DB storage
+    current_user.profile_pic = filename
+    db.session.commit()
+
+    return redirect(url_for("profile"))
+
+#Replacing profile Picture
+@app.route('/replace_profile_pic', methods=['POST'])
+@login_required
+def replace_profile_pic():
+    file = request.files.get('profile_pic')
+
+    if not file:
+        flash("No file selected.", "danger")
+        return redirect(url_for('profile'))
+
+    filename = secure_filename(file.filename)
+    ext = filename.rsplit('.', 1)[-1].lower()
+
+    # Convert HEIC → JPG
+    if ext == "heic":
+        from PIL import Image
+        from pillow_heif import register_heif_opener
+        register_heif_opener()
+
+        img = Image.open(file.stream)
+        new_filename = filename.rsplit('.', 1)[0] + ".jpg"
+        filepath = os.path.join("static/uploads", new_filename)
+        img.save(filepath, "JPEG")
+        filename = new_filename
+
+    else:
+        filepath = os.path.join("static/uploads", filename)
+        file.save(filepath)
+
+    # Save new filename to DB
+    current_user.profile_pic = filename
+    db.session.commit()
+
+    flash("Profile picture updated!", "success")
+    return redirect(url_for('profile'))
 
 # -------------------------
 # MAIN

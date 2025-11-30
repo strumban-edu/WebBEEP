@@ -185,7 +185,8 @@ CREATE TABLE public."User" (
     lastname character varying(255),
     username character varying(255),
     password character varying(255),
-    creatorid integer NOT NULL
+    creatorid integer NOT NULL,
+    profile_pic character varying(255)
 );
 
 
