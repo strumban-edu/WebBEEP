@@ -8,32 +8,32 @@ load_dotenv('dotenv.env')
 app = Flask(__name__)
 
 def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.getenv('DB_HOST'),
-        database=os.getenv('DB_NAME'),
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD')
+    connection = psycopg2.connect(
+        host     =os.getenv('DB_HOST'),
+        database =os.getenv('DB_NAME'),
+        user     =os.getenv('DB_USER'),
+        password =os.getenv('DB_PASSWORD')
     )
-    return conn
+    return connection
 
 
 # HOME PAGE
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    comm = '''
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    command = '''
         SELECT e.eventid, e.eventname, e.category, e.status, e.eventtime, l.locationname
         FROM "Event" e
         JOIN "Location" l ON e.locationid = l.locationid
         ORDER BY e.eventid;
     '''
     
-    cur.execute(comm)
-    events = cur.fetchall()
+    cursor.execute(command)
+    events = cursor.fetchall()
     
-    cur.close()
-    conn.close()
+    cursor.close()
+    connection.close()
     
     return render_template('WebBeepMockup.html', events=events)
 
@@ -49,28 +49,27 @@ def add_event():
         location_name = request.form['location_name']
         location_address = request.form.get('location_address', '')
 
-        conn = get_db_connection()
-        cur = conn.cursor()
+        connection = get_db_connection()
+        cursor = connection.cursor()
         # FIRST COMMAND
-        comm = """
+        command = """
             INSERT INTO "Location" (locationname, locationaddress)
             VALUES (%s, %s)
             RETURNING locationid;
         """
 
-        cur.execute(comm, (location_name, location_address))
-        locationid = cur.fetchone()[0]
+        cursor.execute(command, (location_name, location_address))
+        locationid = cursor.fetchone()[0]
 
         # SECOND COMMAND
-        comm = """
+        command = """
             INSERT INTO "Event" (eventname, category, status, eventtime, creatorid, locationid)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        cur.execute(comm, (eventname, category, status, eventtime, 1, locationid))
-
-        conn.commit()
-        cur.close()
-        conn.close()
+        cursor.execute(command, (eventname, category, status, eventtime, 1, locationid))
+        connection.commit()
+        cursor.close()
+        connection.close()
 
         return redirect(url_for('index'))
 
