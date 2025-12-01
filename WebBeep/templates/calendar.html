@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar</title>
+    <style>
+/* Calendar Container */
+        body {
+           font-family: Arial, sans-serif;
+        }
+        .calendar-wrapper {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+        /* Navigation */
+        .nav {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            background-color: #196c92;
+            padding: 8px 14px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav a:hover {
+            background-color: #145377;
+        }
+
+        /* Calendar Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #2c8fc9;
+            color: black;
+            padding: 10px;
+            font-size: 1.1em;
+        }
+
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            height: 70px;
+            vertical-align: top;
+            background-color: #ffffff;
+            transition: background-color 0.25s;
+        }
+
+        td:hover {
+            background-color: #d4e9f5c2; /* Same light blue as search bar */
+        }
+
+        /* Highlight today's date */
+        td.today {
+            background-color: #196c92;
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+        }
+
+    </style>
+    </head>
+    <body>
+        <div class = "nav">
+            <a href = "/calendar/{{prev_year}}/{{prev_month}}">Previous</a>
+            <a href = "/calendar/{{next_year}}/{{next_month}}">Next</a>
+        </div>
+        <div>
+            {{ calendar|safe }}
+        </div>
+    </body>
+</html>

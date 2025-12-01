@@ -103,6 +103,11 @@
       <option value="Incomplete" {% if event.status == "Incomplete" %}selected{% endif %}>Incomplete</option>
     </select>
 
+    <label for="event_date">Date:</label>
+    <input type="date" id="event_date" name="event_date"
+      value="{{ event.event_date.strftime('%Y-%m-%d') if event.event_date else '' }}"
+      required>
+
     <label for="eventtime">Time:</label>
     <input type="time" id="eventtime" name="eventtime"
       value="{{ event.eventtime.strftime('%H:%M') if event.eventtime else '' }}"

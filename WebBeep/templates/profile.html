@@ -60,7 +60,31 @@
   </header>
 
 <div class="profile-container">
-  <h1>Welcome, {{ current_user.username }}!</h1>
+<h1>Welcome, {{ current_user.username }}!</h1>
+
+{% if current_user.profile_pic %}
+<div style="text-align: center; margin-bottom: 20px;">
+  <img src="{{ url_for('static', filename='uploads/' + current_user.profile_pic) }}"
+       alt="Profile Picture"
+       style="width: 120px; height: 120px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+  <form action="{{ url_for('replace_profile_pic') }}" 
+      method="POST" enctype="multipart/form-data" style="margin-top: 15px;">
+    
+    <input type="file" name="profile_pic" accept=".jpg,.jpeg,.png,.gif,.heic" required>
+    
+    <button type="submit">Replace Profile Picture</button>
+  </form>
+</div>
+{% else %}
+<div style="text-align: center; margin-bottom: 20px;">
+  <form action="{{ url_for('upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+    <label for="profile_pic">Upload Profile Image:</label>
+    <input type="file" id="profile_pic" name="profile_pic" accept="image/*">
+    <button type="submit">Upload</button>
+  </form>
+
+</div>
+{% endif %}
 
   <div class="section">
     <h2>Your Created Events</h2>

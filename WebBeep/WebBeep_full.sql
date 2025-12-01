@@ -59,7 +59,9 @@ CREATE TABLE public."Event" (
     status character varying(255),
     eventtime time without time zone,
     creatorid integer NOT NULL,
-    locationid integer NOT NULL
+    locationid integer NOT NULL,
+    event_image character varying(255),
+    event_date date
 );
 
 
@@ -170,13 +172,21 @@ ALTER SEQUENCE public."Location_locationid_seq" OWNED BY public."Location".locat
 -- Name: User; Type: TABLE; Schema: public; Owner: postgres
 --
 
+CREATE TABLE public."RSVP"(
+    event_id integer Not Null,
+    user_id integer NOT NULL
+);
+
+ALTER TABLE public."RSVP" OWNER TO postgres;
+
 CREATE TABLE public."User" (
     user_id integer NOT NULL,
     firstname character varying(255),
     lastname character varying(255),
     username character varying(255),
     password character varying(255),
-    creatorid integer NOT NULL
+    creatorid integer NOT NULL,
+    profile_pic character varying(255)
 );
 
 
