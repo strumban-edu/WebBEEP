@@ -2,51 +2,51 @@
 -- PostgreSQL database dump
 --
 
-\restrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
+-- \restrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
 
 -- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.6
 
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
+-- SET statement_timeout = 0;
+-- SET lock_timeout = 0;
+-- SET idle_in_transaction_session_timeout = 0;
+-- SET transaction_timeout = 0;
+-- SET client_encoding = 'UTF8';
+-- SET standard_conforming_strings = on;
+-- SELECT pg_catalog.set_config('search_path', '', false);
+-- SET check_function_bodies = false;
+-- SET xmloption = content;
+-- SET client_min_messages = warning;
+-- SET row_security = off;
 
 --
 -- Name: WebBeep; Type: DATABASE; Schema: -; Owner: postgres
 --
 
-CREATE DATABASE "WebBeep" WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United States.1252';
+-- CREATE DATABASE "WebBeep" WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'English_United States.1252';
 
 
-ALTER DATABASE "WebBeep" OWNER TO postgres;
+-- ALTER DATABASE "WebBeep" OWNER TO postgres;
 
-\unrestrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
-\connect "WebBeep"
-\restrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
+-- \unrestrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
+-- \connect "WebBeep"
+-- \restrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
 
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
+-- SET statement_timeout = 0;
+-- SET lock_timeout = 0;
+-- SET idle_in_transaction_session_timeout = 0;
+-- SET transaction_timeout = 0;
+-- SET client_encoding = 'UTF8';
+-- SET standard_conforming_strings = on;
+-- SELECT pg_catalog.set_config('search_path', '', false);
+-- SET check_function_bodies = false;
+-- SET xmloption = content;
+-- SET client_min_messages = warning;
+-- SET row_security = off;
 
-SET default_tablespace = '';
+-- SET default_tablespace = '';
 
-SET default_table_access_method = heap;
+-- SET default_table_access_method = heap;
 
 --
 -- Name: Event; Type: TABLE; Schema: public; Owner: postgres
@@ -59,9 +59,7 @@ CREATE TABLE public."Event" (
     status character varying(255),
     eventtime time without time zone,
     creatorid integer NOT NULL,
-    locationid integer NOT NULL,
-    event_image character varying(255),
-    event_date date
+    locationid integer NOT NULL
 );
 
 
@@ -172,21 +170,13 @@ ALTER SEQUENCE public."Location_locationid_seq" OWNED BY public."Location".locat
 -- Name: User; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public."RSVP"(
-    event_id integer Not Null,
-    user_id integer NOT NULL
-);
-
-ALTER TABLE public."RSVP" OWNER TO postgres;
-
 CREATE TABLE public."User" (
     user_id integer NOT NULL,
     firstname character varying(255),
     lastname character varying(255),
     username character varying(255),
     password character varying(255),
-    creatorid integer NOT NULL,
-    profile_pic character varying(255)
+    creatorid integer NOT NULL
 );
 
 
@@ -421,5 +411,5 @@ ALTER TABLE ONLY public."Event"
 -- PostgreSQL database dump complete
 --
 
-\unrestrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
+-- \unrestrict GXTu2qU0x3HFZ17dPzsFrJHYgXB7jIETQsuxWwKljvWkXNDFGi53rLFKX9XTrsD
 

@@ -1,18 +1,11 @@
 import sqlite3
-import calendar as calmod
-from datetime import date
-from datetime import datetime
-from flask import flash, redirect
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from PIL import Image
-from pillow_heif import register_heif_opener
 from flask_login import (
     LoginManager, login_user, logout_user,
     login_required, current_user, UserMixin
 )
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 import os
 from dotenv import load_dotenv
 
@@ -20,9 +13,6 @@ load_dotenv("dotenv.env")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "devkey")
-
-UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # -------------------------
 # Database CONFIG
@@ -45,7 +35,6 @@ class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    profile_pic = db.Column(db.String(255), nullable=True)
 
     def get_id(self):
         # Flask-Login expects a string ID
@@ -69,8 +58,6 @@ class Event(db.Model):
     eventtime = db.Column(db.Time)
     locationid = db.Column(db.Integer, db.ForeignKey("Location.locationid"))
     creatorid = db.Column(db.Integer, db.ForeignKey("User.user_id"))
-    event_image = db.Column(db.String(255), nullable=True)
-    event_date = db.Column(db.Date, nullable=True)
 
 
 class RSVP(db.Model):
@@ -78,19 +65,6 @@ class RSVP(db.Model):
     rsvp_id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey("Event.eventid"))
     user_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
-
-class EventCalendar(calmod.HTMLCalendar):
-    def __init__(self, events):
-        super().__init__()
-        self.events = events
-
-    def formatday(self, day, weekday):
-        events_html = ''
-        for event in self.events.get(day, []):
-            events_html += f'<li>{event.eventname} at {event.eventtime}</li>'
-        if day != 0:
-            return f"<td><span class='date'>{day}</span><ul>{events_html}</ul></td>"
-        return "<td></td>"
 
 
 
@@ -150,12 +124,16 @@ def index():
 
     return render_template("WebBeepMockup.html", events=events, event_rsvp_dict=event_rsvp_dict)
 
+
+
+
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        image_file = request.files.get("profile_pic")
 
         # Check for existing username
         if User.query.filter_by(username=username).first():
@@ -165,15 +143,6 @@ def register():
         new_user = User(username=username, password=hashed_pw)
 
         db.session.add(new_user) 
-        db.session.flush()
-
-        if image_file and image_file.filename:
-            ext = image_file.filename.rsplit('.', 1)[1].lower()
-            filename = f"{new_user.user_id}_profile.{ext}"
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            image_file.save(filepath)
-            new_user.profile_pic = filename
-
         db.session.commit()
         return redirect("/login")
 
@@ -211,93 +180,36 @@ def add_event():
         eventname = request.form["eventname"]
         category = request.form["category"]
         status = request.form["status"]
-        eventdate = datetime.strptime(request.form["event_date"], "%Y-%m-%d").date()
         eventtime = request.form["eventtime"]
 
         # Location info
         location_name = request.form["location_name"]
         location_address = request.form.get("location_address", "")
 
-        # Get or Create Location
-        location = Location.query.filter_by(locationname=location_name).first()
-
-        if not location:
-            location = Location(locationname=location_name, locationaddress=location_address)
-            db.session.add(location)
-            db.session.flush()  # gets assigned locationid
+        # Create location row
+        loc = Location(
+            locationname=location_name,
+            locationaddress=location_address
+        )
+        db.session.add(loc)
+        db.session.flush()  # get locationid
 
         # Create event row
         event = Event(
             eventname=eventname,
             category=category,
             status=status,
-            event_date=eventdate,
             eventtime=eventtime,
             creatorid=current_user.user_id,
-            locationid=location.locationid,
-            event_image=None,
+            locationid=loc.locationid
         )
-        
+
         db.session.add(event)
-        db.session.flush()
-
-        # Handle image upload
-        image_file = request.files.get("event_image")
-        
-        if image_file and image_file.filename:
-            extension = image_file.filename.rsplit('.', 1)[1].lower()
-            filename = f"{event.eventid}_image.{extension}" 
-            image_path = os.path.join(UPLOAD_FOLDER, filename)
-            image_file.save(image_path)
-            event.event_image = filename
-
         db.session.commit()
 
         return redirect("/")
 
     return render_template("add_event.html")
-
-#Calendar generation
-def generate_calendar(year, month, events_by_day):
-    cal = EventCalendar(events_by_day)
-    return cal.formatmonth(year, month)
-
-@app.route("/calendar")
-@login_required
-def calendar():
-    today = date.today()
-    return redirect(f"/calendar/{today.year}/{today.month}")
-
-@app.route("/calendar/<int:year>/<int:month>")
-@login_required
-def calendar_view(year, month):
-
-    month_events = Event.query.filter(
-        Event.creatorid == current_user.user_id,
-        db.extract('year', Event.event_date) == year,
-        db.extract('month', Event.event_date) == month
-    ).all()
-
-    events_by_day = {}
-    for event in month_events:
-        events_by_day.setdefault(event.event_date.day, []).append(event)
-
-    html_cal = generate_calendar(year, month, events_by_day)
-
-    #Previous months and next month calculation:
-    prev_year, prev_month = (year, month -1) if month > 1 else(year -1, 12)
-    next_year, next_month = (year, month +1) if month < 12 else(year +1, 1)
-
-    return render_template(
-        "calendar.html",
-        calendar=html_cal,
-        year=year,
-        month=month,
-        prev_year=prev_year,
-        prev_month=prev_month,
-        next_year=next_year,
-        next_month=next_month
-    )
 
 @app.route('/edit_event/<int:event_id>', methods=['GET', 'POST'])
 @login_required
@@ -315,31 +227,6 @@ def edit_event(event_id):
         event.category = request.form["category"]
         event.status = request.form["status"]
         event.eventtime = request.form["eventtime"]
-        event.event_date = datetime.strptime(request.form["event_date"], "%Y-%m-%d").date()        
-        # Remove image
-        remove_image = request.form.get("remove_image")
-        if remove_image == "true" and event.event_image:
-            old_image_path = os.path.join(UPLOAD_FOLDER, event.event_image)
-            if os.path.exists(old_image_path):
-                os.remove(old_image_path)
-                
-            event.event_image = None
-
-        # Upload new image
-        image_file = request.files.get("event_image")
-
-        if image_file and image_file.filename:  
-            if event.event_image:
-                old_image_path = os.path.join(UPLOAD_FOLDER, event.event_image)
-                if os.path.exists(old_image_path):
-                    os.remove(old_image_path)
-            
-            extension = image_file.filename.rsplit('.', 1)[1].lower()
-            filename = f"{event_id}_image.{extension}" 
-            image_path = os.path.join(UPLOAD_FOLDER, filename)
-    
-            image_file.save(image_path)
-            event.event_image = filename
 
         # Update location name if present
         location.locationname = request.form["location_name"]
@@ -358,12 +245,6 @@ def delete_event(event_id):
         abort(403)
 
     RSVP.query.filter_by(event_id=event.eventid).delete()
-    
-        # Delete image if present
-    if event.event_image:
-        image_path = os.path.join(UPLOAD_FOLDER, event.event_image)
-        if os.path.exists(image_path):
-            os.remove(image_path)
 
     db.session.delete(event)
     db.session.commit()
@@ -387,77 +268,8 @@ def rsvp_event(event_id):
     db.session.commit()
     return redirect(url_for("index"))
 
-@app.route("/profile")
-@login_required
-def profile():
-    created_events = Event.query.filter_by(creatorid=current_user.user_id).all()
 
-    rsvped_events = db.session.query(Event).join(RSVP, Event.eventid == RSVP.event_id)\
-                      .filter(RSVP.user_id == current_user.user_id).all()
-    return render_template("profile.html" ,created_events=created_events, rsvped_events=rsvped_events)
 
-#Profile Picture Upload
-@app.route("/upload_profile_pic", methods=["POST"])
-@login_required
-def upload_profile_pic():
-    image_file = request.files.get("profile_pic")
-
-    if not image_file or not image_file.filename:
-        return redirect(url_for("profile"))
-    
-    #Deleting old image if it exists
-    if current_user.profile_pic:
-        old_image_path = os.path.join(UPLOAD_FOLDER, current_user.profile_pic)
-        if os.path.exists(old_image_path):
-            os.remove(old_image_path)
-    
-    #Saving new image
-    ext = image_file.filename.rsplit('.', 1)[1].lower()
-    filename = f"{current_user.user_id}_profile.{ext}"
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
-    image_file.save(filepath)
-
-    #DB storage
-    current_user.profile_pic = filename
-    db.session.commit()
-
-    return redirect(url_for("profile"))
-
-#Replacing profile Picture
-@app.route('/replace_profile_pic', methods=['POST'])
-@login_required
-def replace_profile_pic():
-    file = request.files.get('profile_pic')
-
-    if not file:
-        flash("No file selected.", "danger")
-        return redirect(url_for('profile'))
-
-    filename = secure_filename(file.filename)
-    ext = filename.rsplit('.', 1)[-1].lower()
-
-    # Convert HEIC → JPG
-    if ext == "heic":
-        from PIL import Image
-        from pillow_heif import register_heif_opener
-        register_heif_opener()
-
-        img = Image.open(file.stream)
-        new_filename = filename.rsplit('.', 1)[0] + ".jpg"
-        filepath = os.path.join("static/uploads", new_filename)
-        img.save(filepath, "JPEG")
-        filename = new_filename
-
-    else:
-        filepath = os.path.join("static/uploads", filename)
-        file.save(filepath)
-
-    # Save new filename to DB
-    current_user.profile_pic = filename
-    db.session.commit()
-
-    flash("Profile picture updated!", "success")
-    return redirect(url_for('profile'))
 
 # -------------------------
 # MAIN
