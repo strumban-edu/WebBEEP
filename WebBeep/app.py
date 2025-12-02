@@ -80,16 +80,20 @@ class RSVP(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
 
 class EventCalendar(calmod.HTMLCalendar):
-    def __init__(self, events):
+    def __init__(self, events, current_day):
         super().__init__()
         self.events = events
+        self.current_day = current_day
 
     def formatday(self, day, weekday):
         events_html = ''
         for event in self.events.get(day, []):
             events_html += f'<li>{event.eventname} at {event.eventtime}</li>'
+            
+        today_class = 'today' if day == self.current_day else ''
+    
         if day != 0:
-            return f"<td><span class='date'>{day}</span><ul>{events_html}</ul></td>"
+            return f"<td class='{today_class}'><span class='date'>{day}</span><ul>{events_html}</ul></td>"
         return "<td></td>"
 
 
@@ -258,8 +262,8 @@ def add_event():
     return render_template("add_event.html")
 
 #Calendar generation
-def generate_calendar(year, month, events_by_day):
-    cal = EventCalendar(events_by_day)
+def generate_calendar(year, month, events_by_day, current_day):
+    cal = EventCalendar(events_by_day, current_day)
     return cal.formatmonth(year, month)
 
 @app.route("/calendar")
@@ -271,6 +275,8 @@ def calendar():
 @app.route("/calendar/<int:year>/<int:month>")
 @login_required
 def calendar_view(year, month):
+    today = date.today()
+    current_day = today.day 
 
     month_events = Event.query.filter(
         Event.creatorid == current_user.user_id,
@@ -282,11 +288,16 @@ def calendar_view(year, month):
     for event in month_events:
         events_by_day.setdefault(event.event_date.day, []).append(event)
 
-    html_cal = generate_calendar(year, month, events_by_day)
+    html_cal = generate_calendar(year, month, events_by_day, current_day)
 
     #Previous months and next month calculation:
     prev_year, prev_month = (year, month -1) if month > 1 else(year -1, 12)
     next_year, next_month = (year, month +1) if month < 12 else(year +1, 1)
+    
+    #Current month and year
+    now = datetime.now()
+    current_year = now.year
+    current_month = now.month
 
     return render_template(
         "calendar.html",
@@ -296,7 +307,9 @@ def calendar_view(year, month):
         prev_year=prev_year,
         prev_month=prev_month,
         next_year=next_year,
-        next_month=next_month
+        next_month=next_month,
+        current_year=current_year,
+        current_month=current_month
     )
 
 @app.route('/edit_event/<int:event_id>', methods=['GET', 'POST'])
