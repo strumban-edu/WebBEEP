@@ -80,18 +80,27 @@ class RSVP(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("User.user_id"))
 
 class EventCalendar(calmod.HTMLCalendar):
-    def __init__(self, events, current_day):
+    def __init__(self, events, current_day, current_month, current_year, cal_year, cal_month):
         super().__init__()
         self.events = events
         self.current_day = current_day
+        self.current_month = current_month
+        self.current_year = current_year
+        self.cal_year = cal_year
+        self.cal_month = cal_month 
 
     def formatday(self, day, weekday):
         events_html = ''
         for event in self.events.get(day, []):
             events_html += f'<li>{event.eventname} at {event.eventtime}</li>'
             
-        today_class = 'today' if day == self.current_day else ''
-    
+        is_today = (
+        day == self.current_day and
+        self.cal_month == self.current_month and
+        self.cal_year == self.current_year
+        )
+        
+        today_class = 'today' if is_today else ''
         if day != 0:
             return f"<td class='{today_class}'><span class='date'>{day}</span><ul>{events_html}</ul></td>"
         return "<td></td>"
@@ -262,8 +271,8 @@ def add_event():
     return render_template("add_event.html")
 
 #Calendar generation
-def generate_calendar(year, month, events_by_day, current_day):
-    cal = EventCalendar(events_by_day, current_day)
+def generate_calendar(year, month, events_by_day, current_day, current_month, current_year):
+    cal = EventCalendar(events_by_day, current_day, current_month, current_year, year, month)
     return cal.formatmonth(year, month)
 
 @app.route("/calendar")
@@ -277,6 +286,8 @@ def calendar():
 def calendar_view(year, month):
     today = date.today()
     current_day = today.day 
+    current_month = today.month
+    current_year = today.year
 
     month_events = Event.query.filter(
         Event.creatorid == current_user.user_id,
@@ -288,7 +299,7 @@ def calendar_view(year, month):
     for event in month_events:
         events_by_day.setdefault(event.event_date.day, []).append(event)
 
-    html_cal = generate_calendar(year, month, events_by_day, current_day)
+    html_cal = generate_calendar(year, month, events_by_day, current_day, current_month, current_year)
 
     #Previous months and next month calculation:
     prev_year, prev_month = (year, month -1) if month > 1 else(year -1, 12)
