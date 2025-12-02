@@ -148,10 +148,12 @@
 
     <div class="right-section" style="display: flex; align-items: center; gap: 15px;">
       {% if current_user.is_authenticated %}
+        <a href="{{ url_for('index') }}" class="profile-link">Home</a>
         <a href="{{ url_for('add_event') }}" class="profile-link">Add Event</a>
         <a href="{{ url_for('profile') }}" class="profile-link">Profile</a>
         <a href="{{ url_for('logout') }}" class="profile-link">Logout</a>
       {% else %}
+        <a href="{{ url_for('index') }}" class="profile-link">Home</a>
         <a href="{{ url_for('login') }}" class="profile-link">Login</a>
         <a href="{{ url_for('register') }}" class="profile-link">Register</a>
       {% endif %}
